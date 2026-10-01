@@ -1,0 +1,47 @@
+# =============================================================================
+#  gx-ai.conf — Configuracion del kit. ESTE ES EL UNICO ARCHIVO QUE HAY QUE EDITAR.
+# -----------------------------------------------------------------------------
+#  Copiar a  ~/.config/gx-ai.conf  y completar con los datos de tu maquina.
+#  Todas las herramientas del kit leen este archivo.
+#
+#  Para descubrir los valores en TU maquina:
+#    - usuario de Windows     : quien sos en Windows (la carpeta C:\Users\<esto>)
+#    - ruta del gateway        : donde quedo genexus-mcp (buscar publish\GxMcp.Gateway.exe)
+#    - ruta de GeneXus         : instalacion de GeneXus Next (contiene bl\)
+#    - IP del host Windows     : desde WSL ->  ip route | awk '/^default/{print $3}'
+#    - nombres de las KBs      : el nombre del archivo .gxw en la carpeta de la KB
+# =============================================================================
+
+# --- identidad de Windows ----------------------------------------------------
+GX_WIN_USER='<usuario-windows>'
+
+# --- gateway comunitario de genexus-mcp (el que habla con las KBs) -----------
+#     En Windows, la carpeta publish de genexus-mcp (tiene GxMcp.Gateway.exe).
+#     Tipica ubicacion cache de npx:
+#       C:\Users\<usuario>\AppData\Local\npm-cache\_npx\<hash>\node_modules\genexus-mcp\publish
+GX_GATEWAY_DIR_WIN='C:\Users\<usuario-windows>\AppData\Local\npm-cache\_npx\4ff14f3060b5929d\node_modules\genexus-mcp\publish'
+
+# --- servidor oficial de GeneXus (opcional) ----------------------------------
+GX_OFFICIAL_DIR_WIN='C:\Users\<usuario-windows>\AppData\Local\Programs\GeneXus\GeneXus Next\bl'
+
+# --- lanzador de la segunda instancia (para una KB de GX17, opcional) --------
+#     Archivo .ps1 en Windows que arranca el gateway con config-gx17.json en el puerto 5001.
+GX17_LAUNCHER_WIN='C:\Users\<usuario-windows>\gx-mcp-gx17.ps1'
+
+# --- red entre WSL y Windows -------------------------------------------------
+#     Se puede dejar vacio: el kit lo detecta solo con  ip route
+GX_HOST_IP=''
+
+# --- puertos -----------------------------------------------------------------
+PORT_GX18=5000          # gateway comunitario (KB principal)
+PORT_GX17=5001          # gateway de la segunda KB (GX17) en Windows
+PORT_GX17_BRIDGE=5101   # bridge de la segunda KB en WSL
+PORT_OFFICIAL=1989      # servidor oficial
+
+# --- KBs ---------------------------------------------------------------------
+KB_GX18='GX18_GesRec_Prd2026'
+KB_GX17='GX17_Recursos'
+
+# --- carpeta de trabajo para los .xpz (export/import) ------------------------
+#     Se usa para exportar objetos y verificarlos. En Windows.
+GX_EXPORT_DIR_WIN='C:\Users\<usuario-windows>\gx-export'
