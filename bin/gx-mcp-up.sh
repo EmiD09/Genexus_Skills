@@ -28,6 +28,9 @@ GX_CONF="${GX_AI_CONF:-$HOME/.config/gx-ai.conf}"
 GX_WIN_USER="${GX_WIN_USER:-}"
 MOUNT_WIN="${MOUNT_WIN:-/mnt/c}"
 
+# Convierte una ruta de Windows (C:\Users\...) a su equivalente en WSL (/mnt/c/Users/...)
+win_a_wsl() { printf '%s/%s' "$MOUNT_WIN" "$(printf '%s' "$1" | tr '\\' '/' | sed -e 's|^[A-Za-z]:||' -e 's|^/||')"; }
+
 # Ruta del gateway en formato WSL y en formato Windows
 GX_GATEWAY_DIR_WIN="${GX_GATEWAY_DIR_WIN:-C:\\Users\\$GX_WIN_USER\\AppData\\Local\\npm-cache\\_npx\\<hash>\\node_modules\\genexus-mcp\\publish}"
 GX_OFFICIAL_DIR_WIN="${GX_OFFICIAL_DIR_WIN:-C:\\Users\\$GX_WIN_USER\\AppData\\Local\\Programs\\GeneXus\\GeneXus Next\\bl}"
@@ -35,6 +38,7 @@ GX_GATEWAY_DIR="$(win_a_wsl "$GX_GATEWAY_DIR_WIN")"
 GX_OFFICIAL_DIR="$(win_a_wsl "$GX_OFFICIAL_DIR_WIN")"
 
 PORT_COMMUNITY="${PORT_GX18:-5000}"      # gateway comunitario (requiere token)
+
 PORT_OFFICIAL="${PORT_OFFICIAL:-1989}"    # servidor oficial de GeneXus
 
 # --- segunda KB: GeneXus 17 (GX17_Recursos) ---------------------------------
