@@ -5,7 +5,14 @@ const http = require("http");
 
 const TOKEN = process.argv[2];
 const LISTEN_PORT = parseInt(process.argv[3] || "5000", 10);
-const HOST_IP = process.env.GX_HOST_IP || ""   // vacio: se detecta con ip route;
+// Host de Windows: se puede pasar por env, si no se detecta solo (WSL)
+function detectarHost() {
+  try {
+    return require('child_process').execSync("ip route | awk '/^default/{print $3}'")
+      .toString().trim();
+  } catch (e) { return ''; }
+}
+const HOST_IP = process.env.GX_HOST_IP || detectarHost();
 const HOST_PORT = parseInt(process.env.GX_HOST_PORT || "5000", 10);   // destino en Windows (configurable)
 
 const server = http.createServer((clientReq, clientRes) => {
