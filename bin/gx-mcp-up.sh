@@ -180,7 +180,7 @@ fi
 # =============================================================================
 # El bridge HTTP inyecta el token como Bearer, porque Pi no puede mandar headers.
 if [ -n "${TOKEN:-}" ]; then
-  start_bridge "$TMUX_HTTP" "node '$BRIDGE_HTTP' '$TOKEN' '$PORT_COMMUNITY' 2>&1 | tee /tmp/gx-mcp-gateway-bridge.log" \
+  start_bridge "$TMUX_HTTP" "GX_HOST_IP='$HOSTIP' node '$BRIDGE_HTTP' '$TOKEN' '$PORT_COMMUNITY' 2>&1 | tee /tmp/gx-mcp-gateway-bridge.log" \
                "bridge HTTP  :$PORT_COMMUNITY"
 else
   say "  bridge HTTP: se saltea (sin token)"
