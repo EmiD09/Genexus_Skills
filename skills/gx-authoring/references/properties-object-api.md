@@ -1,0 +1,64 @@
+<!-- GENERATED from catalog/properties/properties-object-api.yaml by pipeline/generate.mjs — DO NOT EDIT. Edit the catalog and run `npm run build`. -->
+---
+name: properties-object-api
+description: Configurable api properties
+---
+
+Applies to: API objects ([object-api](./object-api.md))
+
+# GENERAL
+Includes [properties-common](./properties-common.md).
+
+## Main program
+To specify that the object is main. That is, it can be executed as standalone application
+- Type: `boolean`
+- Default: `False`
+
+## REST Protocol
+Enables REST endpoint generation for the object
+- Type: `boolean`
+- Default: `True`
+
+## Include in MCP Server
+Publishes methods as MCP tools when enabled
+- Type: `boolean`
+- Default: `False`
+
+## gRPC Protocol
+Enables gRPC Protocol Support
+- Type: `boolean`
+- Default: `False`
+
+## Generate OpenAPI interface
+Generate OpenAPI documentation (default.yaml) for exposed services and components
+- Type: `enum{Yes,No,Use Environment property value}`
+- Options:
+  - `Yes`: Generates the OpenAPI contract file for the service
+  - `No`: Does not generate the OpenAPI contract file
+  - `Use Environment property value`: Uses the model or environment-level OpenAPI setting
+- Default: `Yes`
+
+## Generate As OpenAI Plugin
+Generates Metadata for Use as OpenAI Plugin
+- Type: `boolean`
+- Default: `False`
+
+## Services base path
+Base path for web services
+- Type: `string`
+
+# MISCELLANEOUS
+
+## GenerateObject
+Enable or disable object specification and generation
+- Type: `boolean`
+- Default: `True`
+
+# INTEGRATED SECURITY
+Includes [properties-common-integrated-security](./properties-common-integrated-security.md).
+
+# WARNING MESSAGES
+Includes [properties-common-warning-messages](./properties-common-warning-messages.md).
+
+# NOTES
+Use this file to select editable properties, defaults, and valid options for this target.

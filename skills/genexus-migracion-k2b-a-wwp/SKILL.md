@@ -1,7 +1,11 @@
 ---
 name: genexus-migracion-k2b-a-wwp
-description: "Trigger: migrar pantalla, WebPanel o procedimiento de GeneXus 17 (K2B) a GeneXus 18 (WWP), migrar objeto entre KBs, usar el MCP de GeneXus, corregir errores spc0023 o build que no genera .java. Migra objetos por el SDK del MCP con verificacion por .xpz."
+description: "Trigger: cualquier trabajo sobre una KB GeneXus con WorkWithPlus (WWP): crear/editar paneles WWP, aplicar patrón, errores spc0023, builds sin .java, usar las herramiantras WWP del MCP de GeneXus; y migrar objetos de GeneXus 17 (K2B) a GeneXus 18 (WWP). Todo por el SDK del MCP con verificación por .xpz."
 ---
+
+# WWP en cualquier KB + Migrar objetos de GeneXus 17 (K2B) a GeneXus 18 (WWP)
+
+**Regla general (cualquier KB con WWP):** antes de tocares un objeto WWP por edición directa de parts (Source/WebForm), leer esta skill y usar las herramientas específicas (`genexus_apply_pattern`, `genexus_wwp`, `genexus_layout`, `genexus_refactor`, `genexus_properties`). Editar el WebForm a mano bajo un PatternInstance hace que el patrón re-proyecte y restaure controles: el patrón tiene prioridad sobre la edición manual.
 
 # Migrar objetos de GeneXus 17 (K2B) a GeneXus 18 (WWP)
 
@@ -50,6 +54,9 @@ Controles del layout: el patron los renombra (`ActVto`->`BtnActVto`, `ChkTrjCrd`
 ## Flujo
 
 1. Confirmar que el MCP esta arriba: `~/bin/gx-mcp-up.sh` y `~/bin/gx-cli.sh --status`.
+   - **La parte GX17 (gateway :5001 / bridge :5101) SOLO se levanta si se pide explícitamente.**
+     Para trabajo normal no es necesaria; si el script la arranca porque hay launcher,
+     se puede ignorar sin problema.
 2. Leer el objeto completo de GX17 por `.xpz` (`genexus_transfer action=export` + el XML).
 3. Migrar con `~/bin/gx-migrate-object.py <Nombre>` (hace export, extrae, crea, aplica el fix
    de matrices y escribe el Source, y verifica). Tiene `--dry-run`.
@@ -59,6 +66,15 @@ Controles del layout: el patron los renombra (`ActVto`->`BtnActVto`, `ChkTrjCrd`
 
 Leer `references/trampas-mcp.md` antes de la primera escritura: ahi estan los codigos de error
 del MCP y como reaccionar a cada uno.
+
+## Referencias de esta skill (leer según el caso)
+
+- `references/trampas-mcp.md` — códigos de error del MCP y cómo reaccionar.
+- `references/wwp-instancias.md` — **regla central**: el layout se edita en la PatternInstance
+  del host (`WorkWithPlus<X>`), nunca en el WebForm; estructura del XML de instancia, receta
+  completa de pantalla nueva, y trampas de proyección (empírico KBs GX18).
+- `references/wwp-oficial-for-agents.md` — estado de "WorkWithPlus for Agents" y cómo instalar
+  la skill oficial de WWP cuando haya GeneXus for Agents.
 
 ## Herramientas de WWP — usar ESTAS primero
 

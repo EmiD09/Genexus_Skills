@@ -54,6 +54,7 @@ BRIDGE_HTTP="$HOME/bin/gx-mcp-gateway-bridge.js"
 BRIDGE_TCP="$HOME/bin/gx-mcp-bridge.js"
 TMUX_HTTP='gxproxy2'
 TMUX_TCP='gxproxy'
+TMUX_AGENTS='gxagentbridge'
 TMUX_HTTP17='gxproxy17'
 
 LOCK="$HOME/.cache/gx-mcp-up.lock"
@@ -117,6 +118,8 @@ if [ "$STATUS_ONLY" = 1 ]; then
   up "http://127.0.0.1:$PORT_OFFICIAL/version" && say "activo" || say "caído"
   printf '  %-14s :%s  ->  ' "bridge GX17" "$PORT_GX17_BRIDGE"
   up "http://127.0.0.1:$PORT_GX17_BRIDGE/mcp" && say "activo" || say "caído"
+  printf '  %-14s :%s  ->  ' "4Agents" "19891"
+  up "http://127.0.0.1:19891/" && say "activo" || say "caído"
   exit 0
 fi
 
@@ -187,6 +190,26 @@ else
 fi
 start_bridge "$TMUX_TCP" "GX_MCP_HOST='$HOSTIP' node '$BRIDGE_TCP' 2>&1 | tee /tmp/gx-mcp-bridge.log" \
              "bridge TCP   :$PORT_OFFICIAL"
+
+# --- GeneXus4Agents (oficial agentic; puerto propio para no chocar con GeneXus Next) ---
+PORT_AGENTS=19891
+SERVER_AGENTS_DIR="$MOUNT_WIN/Users/$GX_WIN_USER/AppData/Local/Programs/GeneXus/GeneXus4Agents/server/current"
+if [ "${SKIP_GX4AGENTS:-0}" = "1" ]; then
+  say "  GeneXus4Agents: se saltea (SKIP_GX4AGENTS=1)"
+elif up "http://$HOSTIP:$PORT_AGENTS/" ; then
+  say "  server GeneXus4Agents :$PORT_AGENTS: ya estaba"
+elif [ -f "$SERVER_AGENTS_DIR/GeneXus.PIA.McpServer.exe" ]; then
+  say "  server GeneXus4Agents :$PORT_AGENTS: arrancando..."
+  powershell.exe -NoProfile -Command \
+    "Start-Process -FilePath '$SERVER_AGENTS_DIR\GeneXus.PIA.McpServer.exe' -WorkingDirectory '$SERVER_AGENTS_DIR' -WindowStyle Minimized" \
+    >/dev/null 2>&1
+  for _ in $(seq 1 25); do sleep 2; up "http://$HOSTIP:$PORT_AGENTS/" && break; done
+  up "http://$HOSTIP:$PORT_AGENTS/" && say "  server GeneXus4Agents: listo" || say "  server GeneXus4Agents: NO respondió"
+else
+  say "  GeneXus4Agents: no está instalado en $SERVER_AGENTS_DIR — se saltea"
+fi
+start_bridge "$TMUX_AGENTS" "node '$HOME/bin/gx-agents-bridge.js' 2>&1 | tee /tmp/gx-agents-bridge.log" \
+             "bridge 4Agents :$PORT_AGENTS"
 # El bridge de GX17 apunta al gateway de GX17 (5001), no al comunitario (5000).
 if [ -n "${TOKEN:-}" ]; then
   start_bridge "$TMUX_HTTP17" "GX_HOST_PORT='$PORT_GX17' node '$BRIDGE_HTTP' '$TOKEN' '$PORT_GX17_BRIDGE' 2>&1 | tee /tmp/gx-mcp-bridge-17.log" \
