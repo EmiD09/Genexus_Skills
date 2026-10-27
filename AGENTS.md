@@ -13,7 +13,6 @@
 | `bin/` | Herramientas cliente del MCP de GeneXus + migrador/diagnóstico. Ver "Dos formas de conectarse a la KB". |
 | `conf/` | `gx-ai.conf.ejemplo` (config de la cadena legacy) y `AGENTS-reglas-globales.md` (reglas de trabajo globales acordadas con el usuario). |
 | `docs/` | `02-flujo-migracion.md` (migrar K2B→WWP paso a paso) y `03-errores.md` (catálogo errores con causa/solución). |
-| `proyectos/riocuarto/` | **ESPECÍFICO de una organización** (Municipalidad de Río Cuarto): reglas por KB, entorno real, valores concretos de datos. **Ignoralo si no es tu caso** — lo genérico está en skills/docs. Si trabajás sobre esas KBs, empezá por `proyectos/riocuarto/README.md`. |
 | `odd/tasks/` | Especificaciones y bitácora de cómo se construyó este kit (lifecycle del repo mismo). |
 
 ## Instalación
@@ -73,16 +72,16 @@ La config está en `~/.config/gx-ai.conf` (template `conf/gx-ai.conf.ejemplo`).
 5. **Con PatternInstance WWP activa: el layout se edita vía PatternInstance XML** (patrón gana
    y re-proyecta). Detalle: `skills/genexus-migracion-k2b-a-wwp/references/wwp-instancias.md`.
 
-## Regla de separación genérico ↔ proyecto
+## Regla de separación genérico ↔ organización
 
-- Todo lo de `skills/`, `bin/`, `docs/`, `conf/` es **genérico GeneXus**: aplica a cualquier
-  organización. Los datos por máquina están como `<placeholders>`.
-- Lo **específico de una organización** va en `proyectos/<org>/` (reglas por KB, entorno real,
-  valores concretos). Al trabajar sobre una org, los placeholders se resuelven con los valores
-  de su carpeta.
-- Al llevar el kit a una org nueva: crear `proyectos/<org>/` (README, entorno.md, AGENTS.md
-  por KB) y NUNCA introducir datos de la org dentro de `skills/` (el mismo repo puede pedirse
-  desde otra empresa).
+- Este repo es **100% genérico GeneXus**: aplica a cualquier organización. Los datos por
+  máquina/u organización quedan como `<placeholders>`; este repo NUNCA lleva datos reales
+  de una org (paths de prod, IPs, KBs concretas).
+- Lo específico de cada organización vive en **un repo aparte y privado** (convención:
+  `genexus-<org>`): un README con cuándo cargarlo, un `entorno.md` con los valores reales
+  que resuelven los placeholders de las skills, y las reglas de cada KB (`kbs/<KB>-AGENTS.md`,
+  copia de las reglas vivas de cada KB). Al trabajar sobre esa org se cargan ambos repos;
+  para todos los demás, este básico alcanza. El kit genérico se puede distribuir sin tocar.
 
 ## Skills instaladas incluidas (routing rápido)
 
@@ -92,7 +91,7 @@ La config está en `~/.config/gx-ai.conf` (template `conf/gx-ai.conf.ejemplo`).
 | `gx-authoring` | Crear/editar objetos GeneXus (*.gx): sintaxis, modelado, eventos. |
 | `gx-kb` | Operar KBs vía `gxnext` CLI o MCP: abrir/configurar/build/reorg. |
 | `genexus-migracion-k2b-a-wwp` | Migrar de GeneXus 17 (K2B) a 18 (WWP), edición de PatternInstance via MCP. |
-| `genexus-entorno-local` | PLANTILLA por máquina: activar servidores MCP, control del build Gradle, fixes conocidos. Completá tus paths; los valores reales de cada org viven en `proyectos/<org>/entorno.md`. |
+| `genexus-entorno-local` | PLANTILLA por máquina: activar servidores MCP, control del build Gradle, fixes conocidos. Completá tus paths; los valores reales de cada org viven en el repo privado de esa org (`entorno.md`). |
 | `k2btools-ui` | Web UI GeneXus cuando la KB tiene K2BTools (PRIORIDAD sobre `nexa` en web UI). |
 | `nexa` | Experto GeneXus genérico: modelado de objetos y administración de KBs. |
 | `ui-creator` | UI desde imagen / OpenAPI a Angular (requisitos de migrar a este framework). |

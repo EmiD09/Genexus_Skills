@@ -2,10 +2,9 @@
 
 Herramientas y conocimiento para que una IA (Pi, Claude, Cursor…) trabaje sobre GeneXus 17/18
 y WorkWithPlus **sin tropezar con las mismas piedras** que tropezamos nosotros.
-
-> **Separación genérico ↔ proyecto:** el kit es genérico; los datos reales de cada
-> organización van en `proyectos/<org>/` (ver `AGENTS.md`, sección "Regla de separación").
-> Si tu caso es la Municipalidad de Río Cuarto: `proyectos/riocuarto/README.md`.
+> **Genérico ⇄ organización:** este kit no lleva datos de ninguna organización — los
+> valores reales por org/repositorio van en un repo privado aparte (convención en
+> `AGENTS.md`, sección "Regla de separación genérico ↔ organización").
 
 Nació de migrar pantallas de **K2B (GeneXus 17) a WWP (GeneXus 18)**. Todo lo que está acá
 salió de errores reales, no de documentación.
@@ -20,7 +19,6 @@ salió de errores reales, no de documentación.
 | `bin/` | Herramientas: **cliente MCP persistente** (`gx-mcp-server-client.js` + `gx-call.sh`), la cadena legacy (bridge/gateway), migrador de objetos y diagnóstico de builds. |
 | `conf/` | Config de la cadena legacy (`gx-ai.conf.ejemplo`) y las **reglas globales de trabajo** (`AGENTS-reglas-globales.md`). El único archivo **por editar** es tu `~/.config/gx-ai.conf`. |
 | `docs/` | Guías paso a paso: flujo de migración y catálogo de errores. |
-| `proyectos/` | **Por organización.** Cada carpeta trae el entorno real y las reglas de las KBs de esa org (ej: `proyectos/riocuarto/`). Si no trabajás con esa org, ignorala — lo tuyo es todo lo demás. |
 
 > **AGI ARRANQUES: si sos una IA, lo primero que tenés que leer es `AGENTS.md`** — ahí está el manual operativo
 > (cómo llamar a las KBs, reglas duras de trabajo y el routing de las skills). Este README es la vista humana.
