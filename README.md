@@ -3,6 +3,10 @@
 Herramientas y conocimiento para que una IA (Pi, Claude, Cursor…) trabaje sobre GeneXus 17/18
 y WorkWithPlus **sin tropezar con las mismas piedras** que tropezamos nosotros.
 
+> **Separación genérico ↔ proyecto:** el kit es genérico; los datos reales de cada
+> organización van en `proyectos/<org>/` (ver `AGENTS.md`, sección "Regla de separación").
+> Si tu caso es la Municipalidad de Río Cuarto: `proyectos/riocuarto/README.md`.
+
 Nació de migrar pantallas de **K2B (GeneXus 17) a WWP (GeneXus 18)**. Todo lo que está acá
 salió de errores reales, no de documentación.
 
@@ -12,10 +16,14 @@ salió de errores reales, no de documentación.
 
 | Carpeta | Qué es |
 |---|---|
-| `skills/` | **El conocimiento.** Una skill de Pi con las convenciones y las trampas. Es lo más valioso del kit. |
-| `bin/` | Las herramientas: cliente MCP, arranque de la cadena, y un migrador de objetos. |
-| `conf/` | **El único archivo que hay que editar.** Rutas, puertos y nombres de KB. |
-| `docs/` | Guías paso a paso: instalar la cadena, migrar un objeto, y el catálogo de errores. |
+| `skills/` | **El conocimiento: 11 skills completas** (GAM, modelado GeneXus, KBs, migración K2B→WWP, K2BTools UI, entorno por-máquina, Chameleon/Mercury/ui-creator). Es lo más valioso del kit. Routing completo en `AGENTS.md`. |
+| `bin/` | Herramientas: **cliente MCP persistente** (`gx-mcp-server-client.js` + `gx-call.sh`), la cadena legacy (bridge/gateway), migrador de objetos y diagnóstico de builds. |
+| `conf/` | Config de la cadena legacy (`gx-ai.conf.ejemplo`) y las **reglas globales de trabajo** (`AGENTS-reglas-globales.md`). El único archivo **por editar** es tu `~/.config/gx-ai.conf`. |
+| `docs/` | Guías paso a paso: flujo de migración y catálogo de errores. |
+| `proyectos/` | **Por organización.** Cada carpeta trae el entorno real y las reglas de las KBs de esa org (ej: `proyectos/riocuarto/`). Si no trabajás con esa org, ignorala — lo tuyo es todo lo demás. |
+
+> **AGI ARRANQUES: si sos una IA, lo primero que tenés que leer es `AGENTS.md`** — ahí está el manual operativo
+> (cómo llamar a las KBs, reglas duras de trabajo y el routing de las skills). Este README es la vista humana.
 
 ---
 
@@ -32,9 +40,28 @@ salió de errores reales, no de documentación.
 
 ---
 
-## Instalación (5 pasos)
+## Instalación rápida (una línea)
 
-### 1. Copiar el kit
+```bash
+./install.sh                # skills → ~/.pi/agent/skills/, bin → ~/bin/, config template
+```
+Idempotente. Después: **leer `AGENTS.md`**, completar tu entorno en `skills/genexus-entorno-local/`
+(plantilla), y probar el cliente:
+
+```bash
+node ~/bin/gx-mcp-server-client.js &                # en background (log: /tmp/gx-mcp-pc.log)
+gx-call.sh genexus_kb '{"action":"open","path":"C:\\KBs\\TuKB"}'
+gx-call.sh genexus_kb '{"action":"set_default","alias":"tukb"}'
+gx-call.sh genexus_read '{"name":"AlgunWebPanel","part":"Source","limit":20000,"refresh":true}'
+```
+
+Esa es la cadena **MCP stdio persistente** (la que usamos a diario): se abre el server oficial
+`genexus-mcp` (npm) vía `cmd.exe`, y cada tool se pide con un `<ID>.json` y respondida con
+`<ID>.res.json`. Grabado igual en `AGENTS.md`.
+
+## Instalación detallada de la cadena legacy (5 pasos)
+
+### 1. Copiar el kit (o correr ./install.sh y saltar al paso 4)
 
 ```bash
 cp -r kit-genexus-ai ~/kit-genexus-ai
@@ -64,12 +91,13 @@ find /mnt/c -name "GxMcp.Gateway.exe" 2>/dev/null | head -1
 ### 3. Instalar la skill
 
 ```bash
-mkdir -p <TU_PROYECTO>/.agents/skills
-cp -r ~/kit-genexus-ai/skills/* <TU_PROYECTO>/.agents/skills/
+mkdir -p ~/.pi/agent/skills
+cp -r <ubi>~/kit-genexus-ai/skills/* ~/.pi/agent/skills/
 ```
 
-Pi escanea `.agents/skills/` **al arrancar**. Después de copiarla, reiniciá Pi.
-Si no aparece sola, forzala con `/skill:genexus-migracion-k2b-a-wwp`.
+Pi escanea `~/.pi/agent/skills/` **al arrancar** (y los proyectos también pueden traer sus
+propias skills en `.agents/skills/`). Después de copiarlas, reiniciá Pi.
+Si no aparece sola, forzala con `/skill:<nombre-de-la-skill>`.
 
 ### 4. Levantar la cadena
 
