@@ -93,3 +93,30 @@ SplitScreen/Tabs, ViewExpanded, WizardArrowType, CardsMenu, etc.).
    `src0294`) ni sobre Numeric en algunas sintaxis; usar comparaciones directas.
 6. El `genexus_read part=PatternInstance` del host NO truncas como el Source:
    puede leerse entero (para panels chicos).
+
+## Runtime web: patrones vistos 2026-10-27 (feature botón por-fila con 3er parm)
+
+1. **`Return` en un evento de WebPanel (web) = volver al panel llamador**, no "cortar el
+   evento". Es exactamente lo que hace el pattern en `AfterTrn`. Para cortar flujo dentro
+   de un `If` de `Grid.Load`: **reestructurar con If/Else/EndIf**. `Exit` solo vale dentro
+   de loops (`src0254`). Síntoma del error: la pantalla carga y vuelve sola al llamador.
+2. **Las líneas auto-generadas (Call/Link de un userAction, parm rule) viven en el XML de la
+   INSTANCIA**, no en el source: `genexus_edit mode=full` sobre Source改革发展 falla
+   (`WriteNotPersisted`); el patrón re-proyecta el bloque `[Start]/[End]`. Para cambiar
+   la firma de una llamada, **patchear `<parameters>` del `<userAction>` (y/o de la
+   `<selection>` del panel destino) y dejar que el patrón regenere** el source
+   (`Call(..., &TercerParm)`, `Link(&Id, &Id, &ChildsMode)`). Los parms que agregan al
+   panel destino se resuelven con un leaf `<parameter>` en `<selection><parameters>`.
+3. **Variables auxiliares por rama**: al reestructurar un If/Else, si una variable
+   alimenta a AMBAS ramas (ej: `&GridPageSize = Grid.Rows` divisor de paginación),
+   asignarla ANTES del If o en ambas ramas; quedar solo en una da Division by zero en runtime.
+4. **Patches de Source: atómicos y balanceados.** Dos patches consecutivos sobre el mismo
+   bloque (quitar Return y luego agregar EndIf) NO validan incrementalmente: cada save
+   valida el árbol completo y rechaza el intermedio. Hacer UN patch con el bloque completo
+   reestructurado.
+5. Los finds de patch se escriben con el line-ending real que devuelve `genexus_read`
+   (\n); el SDK normaliza igual, pero constructo de find de memoria con \r\n garantiza
+   falso-negativo en los asserts locales.
+6. UX de acción por fila: si el tool `genexus_wwp add_user_action` falla al crear una
+   action en la grilla (InvalidCastException conocido del SDK), crearla a mano en el IDE
+   (pattern editor) y los parms quedan en la instancia igual que cualquier UA.
