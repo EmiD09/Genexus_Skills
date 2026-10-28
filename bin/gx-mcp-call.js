@@ -13,7 +13,7 @@ const toolArgs = (!list && !schemaOf) ? (() => {
 })() : null;
 
 const child = spawn('cmd.exe', ['/c', 'npx -y genexus-mcp@latest'], {
-  cwd: '/', // irrelevant for WSL->cmd invocation
+  cwd: '/mnt/c', // Windows-visible dir; '/' resolves to UNC and cmd.exe falls back weirdly
   stdio: ['pipe', 'pipe', 'pipe'],
 });
 
@@ -38,7 +38,7 @@ function request(method, params, timeoutSec) {
   });
 }
 
-child.on('data', (d) => {
+child.stdout.on('data', (d) => {
   buf += d.toString();
   let idx;
   while ((idx = buf.indexOf('\n')) >= 0) {
@@ -59,7 +59,7 @@ child.on('data', (d) => {
 child.stderr.on('data', (d) => process.stderr.write('[gx-mcp stderr] ' + d));
 
 const initP = request('initialize', {
-  protocolVersion: '2025-06-18',
+  protocolVersion: '2024-11-05',
   capabilities: {},
   clientInfo: { name: 'pi-gx-cli', version: '1.0' },
 }, 120);
