@@ -120,3 +120,48 @@ SplitScreen/Tabs, ViewExpanded, WizardArrowType, CardsMenu, etc.).
 6. UX de acción por fila: si el tool `genexus_wwp add_user_action` falla al crear una
    action en la grilla (InvalidCastException conocido del SDK), crearla a mano en el IDE
    (pattern editor) y los parms quedan en la instancia igual que cualquier UA.
+
+## WebComponents con patrón (UsuariosPorRol, etc.) — ruta validada headless (2026-10-28, ticket 584b GamNucleo)
+
+Editar un WebComponent WWP (grid + acciones) sin IDE. Lo que anda y lo que no, verificado:
+
+1. **Resolver la instancia**: `genexus_read part=PatternInstance` con el nombre del PANEL
+   (UsuariosPorRol) resuelve el host `WorkWithPlus<X>` y devuelve `resolvedEntityKey`.
+   Ese entityKey es el que hay que pasar a `genexus_wwp` (con `gxobject` por nombre da
+   `ObjectNotFound`, probado con panel y host).
+2. **Acción de fila en grid**: `genexus_wwp add_user_action` solo agrega acciones de
+   FORMULARIO (`TableActions`), nunca de fila. La vía que funciona es patch XML de la
+   instancia agregando UN `<userAction>` bajo el `<grid>` (es kind permitido).
+   - Atributos que el validador aceptó: solo `name` + `caption`. `image`, `confirm`,
+     `confirmText`, `tooltip`, `fontIcon`, `ControlType`, `imageType` fueron RECHAZADOS
+     (`PatternAttributeNotInSdkSpecification`) aunque la lista del error los mencione.
+     Icono/formato fino: ajustar después en el WebForm proyectado o en el IDE.
+   - El find del patch debe usar el texto EXACTO de la instancia re-leída: el SDK
+     REORDENA atributos (`caption` antes de `name`) y normaliza indentación.
+3. **Columna de grid (gridVariable)**: NO es patcheable por XML (no está entre los kinds
+   permitidos: textBlock/attribute/variable/userAction/image/userControl/actionGroup/
+   errorViewer/data/webComponent). Debe ir por `genexus_wwp add_grid_variable`, que pide
+   `baseVersion` (el `currentVersion` viene en el payload del error, o de un dryRun).
+   - LÍMITE CONOCIDO (v4.0.4 / GX 18.0.9): si el dueño del host es un **WebComponent**,
+     `add_grid_variable` falla con `WwpSnapshotRequired` y `regenerate_derived` con
+     `WwpParentNotResolved` ("Transaction/WebPanel that owns... could not be resolved").
+     La resolución de padre del SDK solo contempla Trn/WebPanel. En ese caso la columna
+     se agrega a mano en el IDE (editor WWP del grid) y el resto sigue headless.
+4. **Leer el source de un objeto con eventos**: `genexus_read part=Source` puede devolver
+   solo la rules (`parm(...)`). El contenido completo está en `genexus_read` sin part →
+   `result.parts.events` / `result.parts.rules`.
+5. **Stub de evento**: el patrón genera el stub del evento del userAction al APLICAR
+   (IDE: abrir y guardar con SDPlus_Editor_Apply_On_Save en Default, o Build). No
+   escribir el evento a mano antes de que exista el stub: queda duplicado (src0208).
+6. **Variable de contexto de fila**: para que el evento del userAction sepa qué fila fue
+   clickeada, la variable debe ser columna del grid. ATENCIÓN GAM: el EO `GAMUser` NO
+   expone propiedad `Id` (src0216 'Id' invalid property); el id de usuario GAM es el GUID.
+   Vía correcta: `&UserId` basada en dominio **GAMGUID** (GeneXusSecurityCommon), en el
+   Load `&UserId = &GAMUser.GetId()` (método expuesto, devuelve GAMGUID) y en el evento
+   `&GAMUser = GAMUser.GetByGUID(&UserId, &GAMError)` (convención GAMWWUsers) antes de
+   `&GAMUser.DeleteRoleById(&RoleId, &GAMError)`. La lista de propiedades/métodos expuestos
+   del EO se confirma en ModuleDefinition.xml dentro del .opc del módulo
+   (Modules/GeneXusSecurity_*.opc), buscando el objeto y sus ExternalProperty/ExternalMethod.
+   Las variables que el patrón proyecta como columnas DEBE declararlas el usuario por el
+   editor WWP del IDE: una declaración por MCP `genexus_variable` el patrón la pisa
+   (re-declara NUMERIC(4) default sobre una NUMERIC(12) hecha por MCP).
