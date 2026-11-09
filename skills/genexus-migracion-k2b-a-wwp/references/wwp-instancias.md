@@ -65,7 +65,7 @@ incluso con `forceWrite` o `SDPlus_Editor_Apply_On_Save=False`.**
 6) Escribir el Source (genexus_edit part=source) — se valida contra los
    controles ya proyectados: un textblock/control referenciado en el source
    tiene que existir en la instancia primero.
-7) Build One por el IDE (gx-oficial build_one).
+7) Build One (IDE o `genexus_lifecycle action=build` por MCP, v4.4.x).
 ```
 
 Sin cantidad: `genexus_apply_pattern` con `mode=diagnose` devuelve findings

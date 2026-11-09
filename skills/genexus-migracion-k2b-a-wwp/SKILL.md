@@ -80,7 +80,6 @@ del MCP y como reaccionar a cada uno.
 - `references/wwp-instancias.md` — **regla central**: el layout se edita en la PatternInstance
   del host (`WorkWithPlus<X>`), nunca en el WebForm; estructura del XML de instancia, receta
   completa de pantalla nueva, y trampas de proyección (empírico KBs GX18).
-- `references/wwp-oficial-for-agents.md` — estado de "WorkWithPlus for Agents" y cómo instalar
   la skill oficial de WWP cuando haya GeneXus for Agents.
 
 ## Herramientas de WWP — usar ESTAS primero

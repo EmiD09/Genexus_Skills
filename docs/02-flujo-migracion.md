@@ -11,7 +11,7 @@ lee**; nunca se modifica.
 ## Antes de empezar
 
 ```bash
-~/bin/gx-mcp-up.sh --status          # las dos KBs tienen que responder
+genexus_whoami por MCP                # la KB tiene que responder
 ```
 
 Anotá el nombre exacto del objeto en **ambas** KBs. Si difiere, peor.

@@ -18,11 +18,25 @@ PLANTILLA por máquina: copiar a skills privadas (o rellenar y NO commitear). Lo
 - No hay JDK en WSL; compilar desde Windows: `cmd.exe /c "cd /d C:\KBs\<KB_ACTUAL>\<CENTRO_PROTOTIPO>\web && gradlew.bat compileJava -Dorg.gradle.jvmargs=-Xmx12288m"`.
 - Logs de build del IDE: `<KB>\OutputLogs\Build.log` (texto ASCII con byte 0x96; usar `grep -a`).
 
-## Servidores MCP (config: `~/.pi/agent/mcp-adapter.json`)
+## Servidores MCP (config del cliente: `~/.pi/agent/mcp-adapter.json`)
 
-1. **gx-oficial** → `http://localhost:1989/mcp`. Es el MCP del IDE GeneXus 18: SOLO escucha mientras GeneXus.exe esta abierto Y el MCP server esta habilitado en el IDE (Tools > Options). Tools cacheadas (2025-11-19): `open_knowledge_base`, `close_knowledge_base`, `create_knowledge_base`, `build_all`, `build_one`, `reorganize`, `run`, `run`/`create_or_impact_database`, `import_text_to_kb`, `export_kb_to_text`, `delete_kb_objects`, `validate_kb_text_files`. Si no responde: pedir al usuario que habilite el MCP en el IDE con puerto 1989.
-2. **gx-mcp** → RECONFIGURADO (2026-10-13) a stdio: `cmd.exe /c "npx -y genexus-mcp@latest"` (genexus-mcp v3.14.0, github.com/lennix1337/Genexus18MCP; maneja la KB via el SDK nativo de GeneXus 18). VALIDADO end-to-end desde WSL: responde initialize y expone 20 tools (`genexus_read`, `genexus_edit`, `genexus_create`, `genexus_kb`, `genexus_query`, `genexus_list_objects`, `genexus_search_source`, `genexus_structure`, `genexus_impact`, `genexus_lifecycle`, ...). Config propia del server: `C:\Users\<USUARIO>\.genexus-mcp\config.json` (GatewayMode stdio-isolated, GX18 en `C:\Program Files (x86)\GeneXus\GeneXus18`, ResolutionPolicy strict sin KBs declaradas -> la KB se resuelve por llamada, p.ej. tool `genexus_kb`; si pide KB explicita, agregarla a `Environment.KBs` de ese config). OJO: desde WSL `npx.cmd` directo NO anda (bash lo parsea como script): siempre via `cmd.exe /c`. VS Code usa el mismo server como `genexus18mcp`. La entrada vieja (http://localhost:5000/mcp) quedo descartada; backup en `~/.pi/agent/mcp-adapter.json.bak-gxmcp`.
-3. En la KB secundaria hubo trabajo previo con un MCP `mcp__genexus` (edicion de events por canal directo, ver `<KB_SECUNDARIA>\ESTADO_PROYECTO.md`).
+> 2026-11-09: **solo se usa el MCP comunitario** (`genexus-mcp`,
+> github.com/lennix1337/Genexus18MCP). Los servers oficiales (gx-oficial, gx-agents,
+> GeneXus4Agents) se eliminaron del kit: no hacen falta y solo hacian ruido.
+
+1. **genexus** → stdio NATIVO Windows: `npx.cmd -y genexus-mcp@latest` (v4.4.x; maneja la
+   KB via el SDK nativo de GeneXus 18). Expone ~70 tools (`genexus_read`, `genexus_edit`,
+   `genexus_create`, `genexus_query`, `genexus_list_objects`, `genexus_search_source`,
+   `genexus_structure`, `genexus_impact`, `genexus_lifecycle`, `genexus_wwp`,
+   `genexus_transfer`, ...). Config propia del server: `C:\Users\<USUARIO>\.genexus-mcp\config.json`
+   (GatewayMode stdio-isolated, GX18 en `C:\Program Files (x86)\GeneXus\GeneXus18`).
+   Declarar las KBs en `Environment.KBs` de ese config (aliases). VS Code usa el mismo
+   server como `genexus18mcp`.
+2. **Alcanza para todo el ciclo**: leer, escribir (`WriteApplied` + `persistedVerified`),
+   validar (`genexus_lifecycle action=validate`) y **compilar** (`genexus_lifecycle
+   action=build`, ~35s por transaccion/panel WWP; nombres ambiguos → resolver con
+   `genexus_query` y usar `targetGuid`; requiere pasar `kb:"<alias>"`). El IDE ya no es
+   necesario para el dia a dia.
 
 ## Modelo de build Gradle (env web GeneXus 18)
 
@@ -34,7 +48,7 @@ PLANTILLA por máquina: copiar a skills privadas (o rellenar y NO commitear). Lo
 
 1. **EO jars faltantes en compile classpath** — errores `package <ORG>.facturas / com.<CODIFICADOR>.Principal does not exist`. FIX APLICADO: copiados `CodeBarGRB.jar` y `arca-factura-reader.jar` de `WEB-INF\lib` a `web\lib`. Si una limpieza los borra, repetir la copia.
 2. **`loadauditplacuerec` no generado** — **RESUELTO Y VERIFICADO (2026-10-13)**: `gradlew compileJava` = BUILD SUCCESSFUL, 0 errores. Causa raiz REAL: la instancia WorkWithPlus de PlaCueRec tenia referencia colgada (`MissingKBObject:Objects_LoadAuditPlaCueRec`); el procedure `LoadAuditPlaCueRec` faltaba como OBJETO en la KB. Los `LoadAudit<Trn>` son objetos reales creados por el patron WWP (parent = instancia `WorkWithPlus<Trn>`), no artefactos internos. FIX: save_as LoadAuditPlaCue→LoadAuditPlaCueRec (clone fallo en Source, objecto parcial) + import_part de Source transformado (renames a PlaCueRec y borrado de 12 atributos/2 niveles inexistentes) + import_part de Variables (29). Despues: Build One del objeto Y **Build One de la transaccion llamadora PlaCueRec** (clave: el `_impl` viejo, generado con el objeto faltante, emitia llamados con buffers `GXv_char7` String[] que no tipan; al regenerar la transaccion salen tipados `execute("Y", GXv_SdtAuditingObject2, A37ORGCOD, ...)`). Archivos del fix: `C:\KBs\<KB_ACTUAL>\_tmp_gxmcp\` (borrables).
-   - OJO MCP: para ESCRIBIR objetos el MCP anda bien; `genexus_lifecycle action=specify` funciona pero NO reescribe los .java generados; `action=build` crashea (el server espera SDK 18.0.10, instalado 18.0.9, drift en 17 DLLs). Para GENERAR: IDE (Build One).
+   - OJO MCP (actualizado 2026-11-09): desde v4.4.x `genexus_lifecycle action=build` FUNCIONA (Status Succeeded, genera y compila; verificar `confirmedStages`). Las notas viejas de que crasheaba (drift SDK 18.0.10 vs 18.0.9) ya no aplican.
    - La KB apunta a **DB2** (datastores Db2Universal, env Prototipo).
 3. **Warning duplicado**: File objects `<LIB_CODIFICADOR>` y `CodeBarMuni.<LIB_CODIFICADOR>` copian ambos a `WEB-INF\lib\CodeBarGRB.jar` (mismo output dir). No bloquea; limpiar en KB (borrar el File duplicado o cambiar output).
 4. **GAM warning**: "Trying to register permissions while Reorganize Server Tables property is set to NO" — si falla la creacion de permisos GAM, revisar esa propiedad / schema GAM.

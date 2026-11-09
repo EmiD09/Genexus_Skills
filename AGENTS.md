@@ -53,11 +53,11 @@ Requisitos: **Windows con GeneXus 18** instalado + **WSL2/WSL con Node.js** en l
    gx-call.sh genexus_kb '{"action":"set_default","alias":"otrakb"}'
    ```
 
-### B (legacy): cadena completa GeneXus + gateway (bin/gx-mcp-up.sh + gx-cli.sh)
+### B (eliminada): cadena legacy WSL/bridges
 
-Útil cuando se necesitan las dos KBs con núcleos GeneXus corriendo (canales oficiales de
-IDE, migración 17↔18 con GeneXus abierto). Documento completo: `docs/02-flujo-migracion.md`.
-La config está en `~/.config/gx-ai.conf` (template `conf/gx-ai.conf.ejemplo`).
+La cadena de bridges y el MCP oficial se eliminaron (2026-11-09): hoy solo se usa el
+MCP comunitario (`npx genexus-mcp`, stdio) que hace todo: leer, escribir, validar y
+compilar (`genexus_lifecycle action=build`).
 
 ## Reglas duras de trabajo (resumen — la fuente completa la mantengo también en conf/AGENTS-reglas-globales.md)
 
@@ -89,7 +89,6 @@ La config está en `~/.config/gx-ai.conf` (template `conf/gx-ai.conf.ejemplo`).
 |---|---|
 | `gam` | Autenticación/autorización GAM, backoffice, seguridad de las apps, modelo FÍSICO de la DB GAM (queries listas: `references/data-model/domain-gam-db-schema.md`).|
 | `gx-authoring` | Crear/editar objetos GeneXus (*.gx): sintaxis, modelado, eventos. |
-| `gx-kb` | Operar KBs vía `gxnext` CLI o MCP: abrir/configurar/build/reorg. |
 | `genexus-migracion-k2b-a-wwp` | Migrar de GeneXus 17 (K2B) a 18 (WWP), edición de PatternInstance via MCP. |
 | `genexus-entorno-local` | PLANTILLA por máquina: activar servidores MCP, control del build Gradle, fixes conocidos. Completá tus paths; los valores reales de cada org viven en el repo privado de esa org (`entorno.md`). |
 | `k2btools-ui` | Web UI GeneXus cuando la KB tiene K2BTools (PRIORIDAD sobre `nexa` en web UI). |

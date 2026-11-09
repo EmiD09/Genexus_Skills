@@ -15,8 +15,8 @@ salió de errores reales, no de documentación.
 
 | Carpeta | Qué es |
 |---|---|
-| `skills/` | **El conocimiento: 11 skills completas** (GAM, modelado GeneXus, KBs, migración K2B→WWP, K2BTools UI, entorno por-máquina, Chameleon/Mercury/ui-creator). Es lo más valioso del kit. Routing completo en `AGENTS.md`. |
-| `bin/` | Herramientas: **cliente MCP persistente** (`gx-mcp-server-client.js` + `gx-call.sh`), la cadena legacy (bridge/gateway), migrador de objetos y diagnóstico de builds. |
+| `skills/` | **El conocimiento: 10 skills completas** (GAM, modelado GeneXus, KBs, migración K2B→WWP, K2BTools UI, entorno por-máquina, Chameleon/Mercury/ui-creator). Es lo más valioso del kit. Routing completo en `AGENTS.md`. |
+| `bin/` | Herramientas: **cliente MCP persistente** (`gx-mcp-server-client.js` + `gx-call.sh`), migrador de objetos y diagnóstico de builds. |
 | `conf/` | Config de la cadena legacy (`gx-ai.conf.ejemplo`) y las **reglas globales de trabajo** (`AGENTS-reglas-globales.md`). El único archivo **por editar** es tu `~/.config/gx-ai.conf`. |
 | `docs/` | Guías paso a paso: flujo de migración y catálogo de errores. |
 
@@ -27,14 +27,14 @@ salió de errores reales, no de documentación.
 
 ## Requisitos
 
-- **WSL2** (o Linux) en la misma máquina que GeneXus. Todas las herramientas asumen WSL.
-- **GeneXus** instalado en Windows, con la KB accesible.
-- **`genexus-mcp`** (el gateway). Viene con el ecosistema de herramientas MCP de GeneXus;
-  si no lo tenés, buscá `GxMcp.Gateway.exe` en tu máquina o instalalo aparte.
-- **Node.js** en WSL (para los bridges).
-- **`curl`**, **`python3`**, **`tmux`**.
+- **GeneXus 18** instalado en Windows, con la KB accesible.
+- **Node.js** en Windows: el único MCP que se usa es el **comunitario** (`genexus-mcp`,
+  github.com/lennix1337/Genexus18MCP), que corre con `npx genexus-mcp` en modo stdio.
+  No se necesita IDE abierto, ni bridges, ni tmux, ni ningún server oficial.
+- **`python3`** solo para `gx-diag-build.py` / `gx-migrate-object.py`.
 
-> El kit **no** incluye GeneXus ni el gateway. Los orquesta.
+> El kit **no** incluye GeneXus. Con el MCP comunitario alcanza para todo:
+> leer, escribir, validar y hasta compilar (`genexus_lifecycle action=build`).
 
 ---
 
@@ -53,40 +53,22 @@ gx-call.sh genexus_kb '{"action":"set_default","alias":"tukb"}'
 gx-call.sh genexus_read '{"name":"AlgunWebPanel","part":"Source","limit":20000,"refresh":true}'
 ```
 
-Esa es la cadena **MCP stdio persistente** (la que usamos a diario): se abre el server oficial
-`genexus-mcp` (npm) vía `cmd.exe`, y cada tool se pide con un `<ID>.json` y respondida con
+Esa es la cadena **MCP stdio persistente** (la que usamos a diario): se abre el MCP comunitario
+`genexus-mcp` (npm) vía `npx`, y cada tool se pide con un `<ID>.json` y respondida con
 `<ID>.res.json`. Grabado igual en `AGENTS.md`.
 
-## Instalación detallada de la cadena legacy (5 pasos)
+## Instalación detallada
 
-### 1. Copiar el kit (o correr ./install.sh y saltar al paso 4)
+### 1. Copiar el kit (o correr ./install.sh)
 
 ```bash
 cp -r kit-genexus-ai ~/kit-genexus-ai
-mkdir -p ~/bin ~/.config
+mkdir -p ~/bin
 cp ~/kit-genexus-ai/bin/* ~/bin/
-chmod +x ~/bin/gx-cli.sh ~/bin/gx-mcp-up.sh ~/bin/gx-migrate-object.py
+chmod +x ~/bin/gx-call.sh ~/bin/gx-migrate-object.py
 ```
 
-### 2. Completar la configuración
-
-```bash
-cp ~/kit-genexus-ai/conf/gx-ai.conf.ejemplo ~/.config/gx-ai.conf
-nano ~/.config/gx-ai.conf
-```
-
-Los valores que hay que averiguar están explicados dentro del archivo. Los dos más
-importantes:
-
-```bash
-# La IP de tu Windows, vista desde WSL:
-ip route | awk '/^default/{print $3}'          # -> GX_HOST_IP
-
-# Dónde quedó el gateway:
-find /mnt/c -name "GxMcp.Gateway.exe" 2>/dev/null | head -1
-```
-
-### 3. Instalar la skill
+### 2. Instalar la skill
 
 ```bash
 mkdir -p ~/.pi/agent/skills
@@ -97,20 +79,11 @@ Pi escanea `~/.pi/agent/skills/` **al arrancar** (y los proyectos también puede
 propias skills en `.agents/skills/`). Después de copiarlas, reiniciá Pi.
 Si no aparece sola, forzala con `/skill:<nombre-de-la-skill>`.
 
-### 4. Levantar la cadena
+### 3. Probar
 
-```bash
-~/bin/gx-mcp-up.sh              # levanta GeneXus + los bridges
-~/bin/gx-mcp-up.sh --status     # verifica
-```
-
-### 5. Probar
-
-```bash
-gx-cli.sh gx genexus_whoami '{}'
-```
-
-Si devuelve `"connected": true` con el nombre de tu KB, está andando.
+Con el MCP configurado en tu cliente (Pi/VS Code: `npx genexus-mcp` en modo stdio), pedile
+al agente un `genexus_whoami`. Si devuelve `"connected": true` con el nombre de tu KB, está andando.
+Sin cliente MCP, la cadena de scripts (`gx-mcp-server-client.js` + `gx-call.sh`) sigue disponible.
 
 ---
 
@@ -141,8 +114,10 @@ Están desarrolladas en `skills/genexus-migracion-k2b-a-wwp/SKILL.md`, pero en r
 2. **Nunca infieras el tipo de una variable por su nombre.** El único tipo confiable es el
    que declara la KB de origen. Un tipo mal puesto rompe al compilar con un `spc0023` que
    aparece recién al final.
-3. **Al escribir el `Source`, el SDK auto-crea toda variable no declarada con `VarChar(100)`**,
-   sin avisar. Después el build falla con errores que parecen de otra cosa.
+3. **Las variables no declaradas**: desde v4.4.x el MCP ya no las declara en silencio
+   (y con `autoDeclareVariables:true` las lista en el receipt con su tipo). Declará las
+   que falten con su tipo real igual: un `VarChar(100)` mal tipado rompe el build con
+   errores que parecen de otra cosa.
 4. **Antes de decir "falta X", buscá con dos criterios distintos.** En WWP los campos se
    llaman `attribute="&Var"`, no `controlName`.
 5. **Usá las herramientas de WWP primero**: `genexus_apply_pattern mode=diagnose` te dice
@@ -169,7 +144,7 @@ gx-cli.sh gx genexus_apply_pattern '{"name":"MiPantalla","pattern":"WorkWithPlus
 
 ## Si algo no anda
 
-1. `~/bin/gx-mcp-up.sh --status`
+1. `genexus_doctor` / `genexus_whoami` vía MCP (¿está viva la KB y el worker?)
 2. `docs/03-errores.md` — catálogo de los errores que ya vimos, con su causa y su solución.
 3. Si el error es nuevo, **verificá por `.xpz` antes de reintentar**. Reintentar a ciegas
    duplica contenido y lo pierde.
