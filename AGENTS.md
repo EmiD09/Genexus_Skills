@@ -89,6 +89,7 @@ compilar (`genexus_lifecycle action=build`).
 |---|---|
 | `gam` | Autenticación/autorización GAM, backoffice, seguridad de las apps, modelo FÍSICO de la DB GAM (queries listas: `references/data-model/domain-gam-db-schema.md`).|
 | `gx-authoring` | Crear/editar objetos GeneXus (*.gx): sintaxis, modelado, eventos. |
+| `genexus-mcp-tools` | Routing de las 72 tools del MCP comunitario: que tool usar para cada cosa, capacidades y limites (inventario v4.4.1). |
 | `genexus-migracion-k2b-a-wwp` | Migrar de GeneXus 17 (K2B) a 18 (WWP), edición de PatternInstance via MCP. |
 | `genexus-entorno-local` | PLANTILLA por máquina: activar servidores MCP, control del build Gradle, fixes conocidos. Completá tus paths; los valores reales de cada org viven en el repo privado de esa org (`entorno.md`). |
 | `k2btools-ui` | Web UI GeneXus cuando la KB tiene K2BTools (PRIORIDAD sobre `nexa` en web UI). |
