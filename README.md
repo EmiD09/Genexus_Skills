@@ -15,7 +15,7 @@ salió de errores reales, no de documentación.
 
 | Carpeta | Qué es |
 |---|---|
-| `skills/` | **El conocimiento: 10 skills completas** (GAM, modelado GeneXus, KBs, migración K2B→WWP, K2BTools UI, entorno por-máquina, Chameleon/Mercury/ui-creator). Es lo más valioso del kit. Routing completo en `AGENTS.md`. |
+| `skills/` | **El conocimiento: 11 skills completas** (incluye : routing de tools del MCP) (GAM, modelado GeneXus, KBs, migración K2B→WWP, K2BTools UI, entorno por-máquina, Chameleon/Mercury/ui-creator). Es lo más valioso del kit. Routing completo en `AGENTS.md`. |
 | `bin/` | Herramientas: **cliente MCP persistente** (`gx-mcp-server-client.js` + `gx-call.sh`), migrador de objetos y diagnóstico de builds. |
 | `conf/` | Config de la cadena legacy (`gx-ai.conf.ejemplo`) y las **reglas globales de trabajo** (`AGENTS-reglas-globales.md`). El único archivo **por editar** es tu `~/.config/gx-ai.conf`. |
 | `docs/` | Guías paso a paso: flujo de migración y catálogo de errores. |
