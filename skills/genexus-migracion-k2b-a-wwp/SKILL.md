@@ -23,20 +23,27 @@ inventado. Del andamiaje K2B no se porta nada. No modificar la KB de origen: sol
    el SDK pone un default y despues rompe al llamador con `spc0023`.
 3. **Despues de migrar, comparar TODAS las variables y el Source contra GX17.** El error
    recien aparece al compilar; el barrido lo detecta al instante.
-4. `WriteNotPersisted`, `VariableRenamed` y `WriteNoChange` son **codigos enganosos**
-   (y `genexus_properties` puede devolver un tipo obsoleto). **Re-verificar por `.xpz` antes de
-   reintentar.** Reintentar a ciegas duplica y pierde contenido.
-5. **Al escribir el `Source`, el SDK auto-crea toda `&Variable` no declarada con el tipo por
-   defecto `VarChar(100)`** — sin avisar. Despues el build falla con errores que parecen de
-   otra cosa (`spc0010: &Hoy = serverdate() (Varchar=Date)`). Pasa con variables que GX17
-   tampoco declara y resuelve al especificar. **Despues de escribir el fuente, comparar las
-   variables usadas contra el XPZ de GX17 y declarar las que falten, con su tipo real.**
+4. `WriteNotPersisted`, `VariableRenamed` y `WriteNoChange` eran **codigos enganosos** en
+   v3.x. Desde v4.4.0 el receipt trae `persistedState` honesto (`confirmed`/`unknown`) —
+   igual conviene re-verificar lo critico por `.xpz`. Reintentar a ciegas duplica y pierde
+   contenido.
+5. **Al escribir el `Source`, las `&Variable` no declaradas**: en v3.x el SDK las auto-creaba
+   `VarChar(100)` sin avisar y el build fallaba despues con errores de otra cosa
+   (`spc0010: &Hoy = serverdate() (Varchar=Date)`). Desde v4.4.x: con `autoDeclareVariables:true`
+   el receipt trae `autoCreatedVariables` + warning; con `false` (default) ya no declara en
+   silencio. **De todos modos: declarar las que falten con su tipo real** (comparar contra el
+   XPZ de GX17).
 5. **Los tipos basados en objeto (BC/SDT/ext) no los acepta `object_atomic`**: van aparte con
    `genexus_variable action=add`. El prefijo de `idBasedOn`/`ATTCUSTOMTYPE` no se debe cortar.
 6. **Sub antes que `Do`**: `Do 'X'` con `X` inexistente da sub-rotina indefinida.
 7. **Para retipar una variable que es matriz**: el fuente la bloquea. Guardarlo, poner un fuente
    minimo temporal, bajar `AttRows` y `AttNumDim`, cambiar el tipo, re-armar la matriz y
    restaurar. Ver `references/trampas-mcp.md`.
+8. **El MCP v4.4.x compila** (`genexus_lifecycle action=build`): requiere `kb:"<alias>"`
+   explicito; nombres ambiguos → `targetGuid` (resuelto con `genexus_query`); objetos
+   `unreachable` (spc0217) no generan codigo (esperado). Verificado en una KB real GX18 U9 2026-11-09:
+   transaccion/panel WWP completo ~35s, 0 errores. Detalles nuevos en
+   `references/trampas-mcp.md` (seccion Novedades v4.4.x).
 
 ## Convencion de eventos (K2B -> WWP)
 

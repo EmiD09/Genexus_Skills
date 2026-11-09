@@ -2,11 +2,41 @@
 
 Todo esto esta **comprobado** en migraciones reales. Leer antes de la primera escritura.
 
+## Novedades v4.4.0/v4.4.1 (verificadas en KB real una KB real GX18 U9, 2026-11-09)
+
+- **Los writes de PatternInstance funcionan tambien en hosts con grilla** (#880/#948):
+  multi-clase `u-*` y property-only pasan (`projected-webform-structural-ids equal:true`,
+  `persistedVerified:true`). Los "4 errors"/`>W` del resumen del build son warnings del spec,
+  no fallos (`Status: Succeeded` manda).
+- **El MCP ya compila en una KB real GX18 U9** (`genexus_lifecycle action=build`): ~35s por
+  transaccion/panel WWP, 5 etapas confirmadas. Requiere `kb:"<alias>"` explicito (sin eso:
+  `KB_CONTEXT_REQUIRED`). Nombres ambiguos (transaccion vs tabla vs data view) → resolver
+  con `genexus_query` y compilar por `targetGuid`. Un objeto `unreachable` (spc0217, sin
+  llamadores ni main) NO genera codigo: esperado, no es falla.
+- **`genexus_transfer` import/export full-cycle OK**; XPZ de Procedures puros importa
+  limpio con `fidelityVerified:true` y SIN stubs (fix #927, verificado con el repro
+  original de v3.5.3).
+- **Variables auto-declaradas** (#889): con `autoDeclareVariables:true` el receipt trae
+  `autoCreatedVariables` (nombre, tipo, largo) + warning; con `false` (default) ya NO
+  declara en silencio. Igual conviene declarar con tipo real.
+- **`genexus_search_source` NO escanea la parte `PatternInstance`** (ni `scope: webForm`
+  la alcanza). Para saber si una clase/valor vive en una instancia: `genexus_read` de la
+  instancia o **`genexus_edit ... dryRun:true` con `replaceAll`** — el `matchCount` del
+  dryRun dice el estado sin escribir.
+- **`genexus_wwp add_table` sobre Selection**: el dryRun planifica bien (`containerName`
+  con ruta de ancestros nombrados, p. ej. `"Sel/TableMain"`), pero el write real falla
+  (tabla vacia: `WwpProjectionNotConfirmed`; con textBlock: `InvalidCastException` en el
+  engine WWP). Rollback exacto en ambos casos. **No insistir**: sigue bloqueado live
+  (#890).
+- **Slice cap de `search_source`**: `requestedTimeoutMs` 40s → `sliceBudgetMs` efectivo
+  250ms, no configurable; el sweep full-KB necesita muchas llamadas chicas pero retoma
+  sin repetir nada (cursor v3, `coverageComplete`, `progress` acumulativo).
+
 ## Lectura
 
 | Situacion | Que hacer |
 |---|---|
-| `genexus_read` devuelve ~5 KB y termina en `// ... [CONTENT TRUNCATED...] ... //` | **El objeto esta bien; la lectura trunca.** Usar `genexus_transfer action=export` + leer el XML del `.xpz`. El paginado que sugiere el mensaje **no funciona**: `parts` es excluyente con `offset`/`limit`, y `part` singular no incluye `Events`. |
+| `genexus_read` devuelve ~5 KB y termina en `// ... [CONTENT TRUNCATED...] ... //` | **El objeto esta bien; la lectura trunca.** En v4.4.x el paginado funciona: `offset`/`limit` con `part` singular paginan bien y las paginas se concatenan (verificado 2026-11-09: objeto de 50KB en 3 paginas, costuras limpias). En v3.x esto no andaba; usar el export `.xpz` solo como fallback. |
 | `genexus_inspect` da `IndexNotReady` | Esperar el indice (`genexus_lifecycle action=status wait=30`). |
 | `genexus_read` da `ObjectNotFound` pero el objeto deberia existir | Puede ser indice en reconstruccion. Confirmar con `genexus_read` tras esperar. |
 | Hay que saber si un objeto **esta de verdad** en la KB | Sin MCP: `JavaDB2iSeries002/state/state12_2_<objeto>.ari` y `GXSPC002/**/<objeto>.sp0`. Si no estan, el objeto no entro, aunque el spec resuelva la llamada y `genexus_read` no de error. |
@@ -16,7 +46,7 @@ Todo esto esta **comprobado** en migraciones reales. Leer antes de la primera es
 
 | Codigo | Significado real |
 |---|---|
-| `WriteNotPersisted` | **Falso negativo frecuente**: la herramienta re-lee truncado y cree que no entro. **Verificar por `.xpz` antes de reintentar.** Reintentar a ciegas genera `já definida` y perdida de contenido. |
+| `WriteNotPersisted` | v4.4.0 lo hace honesto: el receipt trae `persistedState` (`confirmed`/`unknown`) y `persistedVerified`. Si dice `unknown`/`false`, re-verificar; si `confirmed`, esta. En v3.x era falso negativo frecuente. |
 | `VariableRenamed` | **Dos casos**: el `modify` de tipo suele **si** aplicar (confirmar leyendo el `persistedType` de la respuesta). Pero tambien puede ser un fallo real: **verificar por `.xpz`**. |
 | `WriteNoChange` con `existed: 1` | La variable ya estaba. **No le cambia el tipo**: si hay que retiparla, usar `modify`. |
 | `TransactionFailed` + `''X'' é uma sub-rotina indefinida` | Falta el `Sub 'X'`. **Agregar los Subs antes que los `Do`.** |
@@ -28,7 +58,7 @@ Todo esto esta **comprobado** en migraciones reales. Leer antes de la primera es
 | `WorkerTimeout` | Puede seguir procesando: **verificar por `.xpz`**. |
 | `DeleteFailed` | `genexus_delete_object` falla si **alguien llama al objeto**. Hay que borrar los llamadores primero (o actualizar en el lugar). |
 | `LegacyWorkerError` | Operacion no soportada. Ver "Matrices". |
-| `TransferImportVerificationUnavailable` | Dice *"no import was attempted"* **y sin embargo crea el objeto como stub vacio**. Siempre verificar. |
+| `TransferImportVerificationUnavailable` | **Arreglado en v4.4.0 (fix #927, verificado live 2026-11-09)**: el preflight ya no construye objetos y un XPZ de Procedures puros importa limpio (`fidelityVerified:true`) sin stubs. En v3.x decia *"no import was attempted"* y dejaba el primer target como stub vacio. |
 | `AtomicCreateValidationFailed` | No expone `fieldErrors`. Aislar por biseccion. |
 
 ### La respuesta del `modify` trae el tipo aplicado — usarla
