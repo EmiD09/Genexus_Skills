@@ -41,7 +41,7 @@ inventado. Del andamiaje K2B no se porta nada. No modificar la KB de origen: sol
    restaurar. Ver `references/trampas-mcp.md`.
 8. **El MCP v4.4.x compila** (`genexus_lifecycle action=build`): requiere `kb:"<alias>"`
    explicito; nombres ambiguos → `targetGuid` (resuelto con `genexus_query`); objetos
-   `unreachable` (spc0217) no generan codigo (esperado). Verificado en una KB real GX18 U9 2026-11-09:
+   `unreachable` (spc0217) no generan codigo (esperado). Verificado en una KB real (GX18 U9) 2026-11-09:
    transaccion/panel WWP completo ~35s, 0 errores. Detalles nuevos en
    `references/trampas-mcp.md` (seccion Novedades v4.4.x).
 

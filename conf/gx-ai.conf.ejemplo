@@ -40,7 +40,7 @@ PORT_OFFICIAL=1989      # servidor oficial
 
 # --- KBs ---------------------------------------------------------------------
 KB_GX18='<tu-kb-principal>'
-KB_GX17='<tu-kb-gx17>'
+KB_GX17='<tu-kb-secundaria-gx17>'
 
 # --- carpeta de trabajo para los .xpz (export/import) ------------------------
 #     Se usa para exportar objetos y verificarlos. En Windows.

@@ -121,7 +121,7 @@ SplitScreen/Tabs, ViewExpanded, WizardArrowType, CardsMenu, etc.).
    action en la grilla (InvalidCastException conocido del SDK), crearla a mano en el IDE
    (pattern editor) y los parms quedan en la instancia igual que cualquier UA.
 
-## WebComponents con patrón (UsuariosPorRol, etc.) — ruta validada headless (2026-10-28, ticket 584b una KB real con WWP+GAM)
+## WebComponents con patrón — ruta validada headless (2026-10-28, KB real con WWP+GAM)
 
 Editar un WebComponent WWP (grid + acciones) sin IDE. Lo que anda y lo que no, verificado:
 

@@ -2,13 +2,13 @@
 
 Todo esto esta **comprobado** en migraciones reales. Leer antes de la primera escritura.
 
-## Novedades v4.4.0/v4.4.1 (verificadas en KB real una KB real GX18 U9, 2026-11-09)
+## Novedades v4.4.0/v4.4.1 (verificadas en KB real GX18 U9, 2026-11-09)
 
 - **Los writes de PatternInstance funcionan tambien en hosts con grilla** (#880/#948):
   multi-clase `u-*` y property-only pasan (`projected-webform-structural-ids equal:true`,
   `persistedVerified:true`). Los "4 errors"/`>W` del resumen del build son warnings del spec,
   no fallos (`Status: Succeeded` manda).
-- **El MCP ya compila en una KB real GX18 U9** (`genexus_lifecycle action=build`): ~35s por
+- **El MCP ya compila en KB real GX18 U9** (`genexus_lifecycle action=build`): ~35s por
   transaccion/panel WWP, 5 etapas confirmadas. Requiere `kb:"<alias>"` explicito (sin eso:
   `KB_CONTEXT_REQUIRED`). Nombres ambiguos (transaccion vs tabla vs data view) → resolver
   con `genexus_query` y compilar por `targetGuid`. Un objeto `unreachable` (spc0217, sin
